@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Jogo da velha</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="jogo">
@@ -22,7 +22,8 @@
   </main>
   <script>
     const tabuleiro = Array(9).fill('');
-    let jogador = 'X', terminado = false, aguardando = false;
+    let jogador = 'X', terminado = false;
+    const linhas = [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]];
     const grade = document.getElementById('tabuleiro');
     const status = document.getElementById('status');
     const celulas = tabuleiro.map((_, i) => {
@@ -32,23 +33,19 @@
       botao.addEventListener('click', () => jogar(i));
       grade.appendChild(botao); return botao;
     });
-    async function jogar(i) {
-      if (terminado || aguardando || tabuleiro[i]) return;
-      aguardando = true;
+    function jogar(i) {
+      if (terminado || tabuleiro[i]) return;
       const simbolo = jogador;
       tabuleiro[i] = simbolo;
       celulas[i].textContent = simbolo;
       celulas[i].classList.add(simbolo.toLowerCase());
       celulas[i].setAttribute('aria-label', `Casa ${i + 1}, ${simbolo}`);
-      try {
-        const resposta = await fetch('/avaliar', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({tabuleiro})});
-        if (!resposta.ok) throw new Error('Erro no servidor');
-        const resultado = await resposta.json();
-        if (resultado.vencedor) {
+        const linha = linhas.find(([a, b, c]) => tabuleiro[a] && tabuleiro[a] === tabuleiro[b] && tabuleiro[a] === tabuleiro[c]);
+        if (linha) {
           terminado = true;
           status.innerHTML = `<strong class="${simbolo.toLowerCase()}">${simbolo}</strong> venceu a partida!`;
-          resultado.linha.forEach(posicao => celulas[posicao].classList.add('vencedora'));
-        } else if (resultado.empate) {
+          linha.forEach(posicao => celulas[posicao].classList.add('vencedora'));
+        } else if (tabuleiro.every(Boolean)) {
           terminado = true; status.textContent = 'Deu velha! A partida empatou.';
         } else {
           jogador = simbolo === 'X' ? 'O' : 'X';
@@ -56,14 +53,8 @@
         }
         document.getElementById('jogador-x').classList.toggle('ativo', !terminado && jogador === 'X');
         document.getElementById('jogador-o').classList.toggle('ativo', !terminado && jogador === 'O');
-      } catch (erro) {
-        tabuleiro[i] = ''; celulas[i].textContent = ''; celulas[i].className = 'celula';
-        celulas[i].setAttribute('aria-label', `Casa ${i + 1}, vazia`);
-        status.textContent = 'Não foi possível conectar ao servidor. Tente novamente.';
-      } finally { aguardando = false; }
     }
     document.getElementById('reiniciar').addEventListener('click', () => {
-      if (aguardando) return;
       tabuleiro.fill(''); jogador = 'X'; terminado = false;
       celulas.forEach((celula, i) => { celula.textContent = ''; celula.className = 'celula'; celula.setAttribute('aria-label', `Casa ${i + 1}, vazia`); });
       status.innerHTML = 'Vez de <strong class="x">X</strong>';
