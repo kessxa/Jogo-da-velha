@@ -1,0 +1,23 @@
+* { box-sizing: border-box; }
+:root { font-family: system-ui, sans-serif; color: #19263c; background: #f4f6fa; }
+body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 32px 18px; }
+.jogo { width: min(100%, 480px); text-align: center; }
+.etiqueta { color: #77849a; font-size: .68rem; font-weight: 800; letter-spacing: .18em; }
+h1 { margin: 9px 0; font-size: clamp(2.3rem, 9vw, 3.4rem); letter-spacing: -.06em; line-height: 1.1; }
+h1 span { color: #ed5561; }
+.descricao, .rodape { color: #77849a; font-size: .9rem; }
+.jogadores { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 29px auto 18px; }
+.jogador { background: #fff; border: 2px solid transparent; border-radius: 14px; padding: 12px; display: flex; gap: 12px; align-items: center; text-align: left; box-shadow: 0 5px 22px #263b5a0a; }
+.jogador.ativo { border-color: #c4cedd; }
+.jogador strong { font-size: 1.7rem; line-height: 1; }
+.jogador span { font-size: .68rem; font-weight: 800; color: #8490a2; letter-spacing: .08em; }
+.x { color: #e34d5b; } .o { color: #3985e6; }
+.status { font-size: 1rem; font-weight: 700; min-height: 1.5em; margin: 20px 0; }
+.tabuleiro { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.celula { aspect-ratio: 1; border: 0; border-radius: 16px; background: white; box-shadow: 0 5px 22px #263b5a0d; cursor: pointer; font: 800 clamp(3rem, 15vw, 5rem)/1 system-ui, sans-serif; transition: transform .15s, background .15s; }
+.celula:hover:empty { background: #e9eef7; transform: translateY(-2px); }
+.celula.vencedora { background: #e7f4ed; }
+button:focus-visible { outline: 3px solid #6c91c8; outline-offset: 3px; }
+.reiniciar { margin-top: 25px; border: 0; border-radius: 10px; padding: 13px 24px; background: #263953; color: white; font: 700 .9rem system-ui, sans-serif; cursor: pointer; }
+.reiniciar:hover { background: #354e70; }
+.rodape { margin: 24px 0 0; font-size: .8rem; }

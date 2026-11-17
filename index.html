@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jogo da velha</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="jogo">
+    <p class="etiqueta">UM CLÁSSICO PARA DOIS</p>
+    <h1>Jogo da velha<span>.</span></h1>
+    <p class="descricao">Uma partida, duas pessoas. Quem faz a próxima linha?</p>
+    <div class="jogadores" aria-label="Jogadores">
+      <div class="jogador ativo" id="jogador-x"><strong class="x">X</strong><span>JOGADOR 1</span></div>
+      <div class="jogador" id="jogador-o"><strong class="o">O</strong><span>JOGADOR 2</span></div>
+    </div>
+    <p class="status" id="status" aria-live="polite">Vez de <strong class="x">X</strong></p>
+    <div class="tabuleiro" id="tabuleiro" aria-label="Tabuleiro do jogo da velha"></div>
+    <button class="reiniciar" id="reiniciar" type="button">↻ &nbsp; Nova partida</button>
+    <p class="rodape">O primeiro a alinhar três símbolos vence.</p>
+  </main>
+  <script>
+    const tabuleiro = Array(9).fill('');
+    let jogador = 'X', terminado = false, aguardando = false;
+    const grade = document.getElementById('tabuleiro');
+    const status = document.getElementById('status');
+    const celulas = tabuleiro.map((_, i) => {
+      const botao = document.createElement('button');
+      botao.type = 'button'; botao.className = 'celula';
+      botao.setAttribute('aria-label', `Casa ${i + 1}, vazia`);
+      botao.addEventListener('click', () => jogar(i));
+      grade.appendChild(botao); return botao;
+    });
+    async function jogar(i) {
+      if (terminado || aguardando || tabuleiro[i]) return;
+      aguardando = true;
+      const simbolo = jogador;
+      tabuleiro[i] = simbolo;
+      celulas[i].textContent = simbolo;
+      celulas[i].classList.add(simbolo.toLowerCase());
+      celulas[i].setAttribute('aria-label', `Casa ${i + 1}, ${simbolo}`);
+      try {
+        const resposta = await fetch('/avaliar', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({tabuleiro})});
+        if (!resposta.ok) throw new Error('Erro no servidor');
+        const resultado = await resposta.json();
+        if (resultado.vencedor) {
+          terminado = true;
+          status.innerHTML = `<strong class="${simbolo.toLowerCase()}">${simbolo}</strong> venceu a partida!`;
+          resultado.linha.forEach(posicao => celulas[posicao].classList.add('vencedora'));
+        } else if (resultado.empate) {
+          terminado = true; status.textContent = 'Deu velha! A partida empatou.';
+        } else {
+          jogador = simbolo === 'X' ? 'O' : 'X';
+          status.innerHTML = `Vez de <strong class="${jogador.toLowerCase()}">${jogador}</strong>`;
+        }
+        document.getElementById('jogador-x').classList.toggle('ativo', !terminado && jogador === 'X');
+        document.getElementById('jogador-o').classList.toggle('ativo', !terminado && jogador === 'O');
+      } catch (erro) {
+        tabuleiro[i] = ''; celulas[i].textContent = ''; celulas[i].className = 'celula';
+        celulas[i].setAttribute('aria-label', `Casa ${i + 1}, vazia`);
+        status.textContent = 'Não foi possível conectar ao servidor. Tente novamente.';
+      } finally { aguardando = false; }
+    }
+    document.getElementById('reiniciar').addEventListener('click', () => {
+      if (aguardando) return;
+      tabuleiro.fill(''); jogador = 'X'; terminado = false;
+      celulas.forEach((celula, i) => { celula.textContent = ''; celula.className = 'celula'; celula.setAttribute('aria-label', `Casa ${i + 1}, vazia`); });
+      status.innerHTML = 'Vez de <strong class="x">X</strong>';
+      document.getElementById('jogador-x').classList.add('ativo');
+      document.getElementById('jogador-o').classList.remove('ativo');
+    });
+  </script>
+</body>
+</html>
