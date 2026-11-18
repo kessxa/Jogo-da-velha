@@ -1,6 +1,6 @@
 # Jogo da velha
 
-Jogo para duas pessoas no mesmo computador. X joga em vermelho e O em azul.
+Jogo para duas pessoas no mesmo computador ou contra o computador. X joga em vermelho e O em azul; contra o computador, você joga com X.
 
 Jogue diretamente no navegador: https://kessxa.github.io/Jogo-da-velha/
 
